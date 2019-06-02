@@ -1,7 +1,7 @@
-<mat-toolbar class="nav-bar">
+<mat-toolbar class="nav-bar" style="position: sticky;">
   <span>Gabriel Kojima - MNC</span>
 </mat-toolbar>
-<div class="col-12">
+<div class="col-12 mb-5">
   <mat-card class="example-card mt-3">
     <mat-card-header>
       <mat-card-title>Métodos</mat-card-title>
@@ -13,7 +13,7 @@
           <mat-label>Método</mat-label>
           <mat-select
             [(ngModel)]="metodo"
-            (selectionChange)="metodoForm.reset()"
+            (selectionChange)="metodoForm.reset(); iteracoes.splice(0)"
           >
             <mat-option value="bisseccao">
               Bissecção
@@ -69,10 +69,41 @@
           </mat-form-field>
         </form>
       </div>
-      <div *ngIf="iteracoes.length !== 0" class="col-12 border">
-        <p *ngFor="let it of iteracoes; let i = index" class="m-0">
-          X = {{ it.ix }}, F(x) = {{ it.ifx }}, Iteração = {{ it.i }}
-        </p>
+      <div *ngIf="iteracoes.length !== 0" class="col-12 p-0">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+          <ng-container matColumnDef="iteracao">
+            <th mat-header-cell *matHeaderCellDef>Iteração</th>
+            <td mat-cell *matCellDef="let element">{{ element.i }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="x">
+            <th mat-header-cell *matHeaderCellDef>x</th>
+            <td mat-cell *matCellDef="let element">{{ element.ix }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="fx">
+            <th mat-header-cell *matHeaderCellDef>F(x)</th>
+            <td mat-cell *matCellDef="let element">{{ element.ifx }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="bma">
+            <th mat-header-cell *matHeaderCellDef>b - a</th>
+            <td mat-cell *matCellDef="let element">{{ element.bma }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="xmx">
+            <th mat-header-cell *matHeaderCellDef>|xk - xk-1|</th>
+            <td mat-cell *matCellDef="let element">{{ element.ixmx }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="dx">
+              <th mat-header-cell *matHeaderCellDef>Derivada(x)</th>
+              <td mat-cell *matCellDef="let element">{{ element.idx }}</td>
+            </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
       </div>
     </mat-card-content>
     <mat-card-actions style="display: flex;" class="border-top">
@@ -83,6 +114,14 @@
         (click)="calcularMetodo(metodo)"
       >
         Calcular
+      </button>
+      <button
+        *ngIf="iteracoes.length != 0"
+        mat-raised-button
+        color="warn"
+        (click)="metodoForm.reset(); iteracoes.splice(0); metodo = null"
+      >
+        Limpar
       </button>
     </mat-card-actions>
   </mat-card>

@@ -11,11 +11,9 @@ const math = require('mathjs');
 export class PrincipalComponent implements OnInit {
 
   metodo: string;
-  a: number;
-  b: number;
-  precisao: number;
-  x: number;
-  funcao: string;
+
+  displayedColumns: string[];
+  dataSource: any;
 
   metodoForm: FormGroup;
 
@@ -43,6 +41,7 @@ export class PrincipalComponent implements OnInit {
     if (metodo === 'cordasmod') {
     }
     if (metodo === 'newton') {
+      this.metodoNewton(this.metodoForm.value);
     }
     if (metodo === 'newtonmod') {
     }
@@ -54,6 +53,7 @@ export class PrincipalComponent implements OnInit {
     let fb = 0;
     let a = form.a;
     let b = form.b;
+    let bmenosa = 0;
     let iteracao = 1;
     this.iteracoes.splice(0);
 
@@ -72,7 +72,7 @@ export class PrincipalComponent implements OnInit {
 
     if (fa * fb < 0) {
       console.log('Existe raíz');
-      while ((Math.abs(fx) > form.precisao) && (b - a) > form.precisao) {
+      while ((Math.abs(fx) > form.precisao) && Math.abs((b - a)) > form.precisao) {
         iteracao++;
         if (fa * fx > 0) {
           a = x;
@@ -81,23 +81,69 @@ export class PrincipalComponent implements OnInit {
         }
         x = (a + b) / 2;
         fx = this.resolveFuncao(x, form.funcao);
+        bmenosa = (b - a);
         this.iteracoes.push({
           ix: x,
           ifx: fx,
+          bma: bmenosa,
           i: iteracao
         });
       }
+      this.dataSource = this.iteracoes;
+      this.displayedColumns = ['iteracao', 'x', 'fx', 'bma'];
     } else {
       alert('Não existe raíz neste intervalo.');
     }
   }
 
+  metodoNewton(form) {
+    let fx = 0;
+    let dx = 0;
+    let iteracao = 1;
+    let x = form.x;
+    let xatual = 0;
+    let xmx = 0;
+    this.iteracoes.splice(0);
+    fx = this.resolveFuncao(x, form.funcao);
+    dx = this.derivar(x, form.funcao);
+    xatual = x - (fx / dx);
+    xmx = Math.abs(xatual - x);
+    this.iteracoes.push({
+      ix: x,
+      ifx: fx,
+      idx: dx,
+      ixmx: xmx,
+      i: iteracao
+    });
+    x = xatual;
+    while ((Math.abs(fx) > form.precisao) && xmx > form.precisao) {
+      iteracao ++;
+      fx = this.resolveFuncao(xatual, form.funcao);
+      dx = this.derivar(xatual, form.funcao);
+      xatual = xatual - (fx / dx);
+      xmx = Math.abs(xatual - x);
+      this.iteracoes.push({
+        ix: x,
+        ifx: fx,
+        idx: dx,
+        ixmx: xmx,
+        i: iteracao
+      });
+      x = xatual;
+    }
+    this.dataSource = this.iteracoes;
+    this.displayedColumns = ['iteracao', 'x', 'fx', 'dx', 'xmx'];
+  }
+
   resolveFuncao(valor, funcao) {
-    console.log('valor: ' + valor);
     const parser = math.parser();
     parser.set('x', valor);
     const result = parser.eval(funcao);
-    console.log(result);
+    return result;
+  }
+
+  derivar(valor, funcao) {
+    const result = math.derivative(funcao, 'x').eval({x: valor});
     return result;
   }
 
